@@ -76,17 +76,29 @@ export function MessageList({ messages, isLoading }: MessageListProps) {
                             );
                           case "tool-invocation":
                             const tool = part.toolInvocation;
+                            // Map tool names to user-friendly messages
+                            const getToolMessage = (toolName: string): string => {
+                              switch (toolName) {
+                                case "str_replace_editor":
+                                  return "Updating code";
+                                case "file_manager":
+                                  return "Managing files";
+                                default:
+                                  return toolName.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+                              }
+                            };
+
                             return (
                               <div key={partIndex} className="inline-flex items-center gap-2 mt-2 px-3 py-1.5 bg-neutral-50 rounded-lg text-xs font-mono border border-neutral-200">
                                 {tool.state === "result" && tool.result ? (
                                   <>
                                     <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                                    <span className="text-neutral-700">{tool.toolName}</span>
+                                    <span className="text-neutral-700">{getToolMessage(tool.toolName)}</span>
                                   </>
                                 ) : (
                                   <>
                                     <Loader2 className="w-3 h-3 animate-spin text-blue-600" />
-                                    <span className="text-neutral-700">{tool.toolName}</span>
+                                    <span className="text-neutral-700">{getToolMessage(tool.toolName)}</span>
                                   </>
                                 )}
                               </div>

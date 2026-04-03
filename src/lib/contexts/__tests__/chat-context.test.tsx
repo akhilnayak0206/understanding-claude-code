@@ -2,7 +2,7 @@ import { describe, test, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, waitFor, act, cleanup } from "@testing-library/react";
 import { ChatProvider, useChat } from "../chat-context";
 import { useFileSystem } from "../file-system-context";
-import { useChat as useAIChat } from "@ai-sdk/react";
+import { useChat as useAIChat } from "ai/react";
 import * as anonTracker from "@/lib/anon-work-tracker";
 
 // Mock dependencies
