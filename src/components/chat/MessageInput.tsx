@@ -1,11 +1,11 @@
 "use client";
 
-import { ChangeEvent, FormEvent, KeyboardEvent } from "react";
+import { ChangeEvent, FormEvent, KeyboardEvent, useState, useEffect } from "react";
 import { Send } from "lucide-react";
 
 interface MessageInputProps {
-  input: string;
-  handleInputChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
+  input: string | undefined;
+  handleInputChange?: (e: ChangeEvent<HTMLTextAreaElement>) => void;
   handleSubmit: (e: FormEvent<HTMLFormElement>) => void;
   isLoading: boolean;
 }
@@ -16,6 +16,14 @@ export function MessageInput({
   handleSubmit,
   isLoading,
 }: MessageInputProps) {
+  // Local state as fallback
+  const [localInput, setLocalInput] = useState(input || '');
+
+  // Sync local state with input prop
+  useEffect(() => {
+    setLocalInput(input || '');
+  }, [input]);
+
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -26,12 +34,20 @@ export function MessageInput({
     }
   };
 
+  // Fallback handler to prevent React warning
+  const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    setLocalInput(e.target.value);
+    if (handleInputChange) {
+      handleInputChange(e);
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} className="relative p-4 bg-white border-t border-neutral-200/60">
       <div className="relative max-w-4xl mx-auto">
         <textarea
-          value={input}
-          onChange={handleInputChange}
+          value={input ?? localInput}
+          onChange={handleChange}
           onKeyDown={handleKeyDown}
           placeholder="Describe the React component you want to create..."
           disabled={isLoading}
@@ -40,10 +56,10 @@ export function MessageInput({
         />
         <button 
           type="submit" 
-          disabled={isLoading || !input.trim()}
+          disabled={isLoading || !(input ?? localInput).trim()}
           className="absolute right-3 bottom-3 p-2.5 rounded-lg transition-all hover:bg-blue-50 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent group"
         >
-          <Send className={`h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 ${isLoading || !input.trim() ? 'text-neutral-300' : 'text-blue-600'}`} />
+          <Send className={`h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 ${isLoading || !(input ?? localInput).trim() ? 'text-neutral-300' : 'text-blue-600'}`} />
         </button>
       </div>
     </form>
