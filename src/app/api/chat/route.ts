@@ -1,6 +1,6 @@
 import type { FileNode } from "@/lib/file-system";
 import { VirtualFileSystem } from "@/lib/file-system";
-import { streamText, appendResponseMessages } from "ai";
+import { streamText } from "ai";
 import { buildStrReplaceTool } from "@/lib/tools/str-replace";
 import { buildFileManagerTool } from "@/lib/tools/file-manager";
 import { prisma } from "@/lib/prisma";
@@ -31,14 +31,12 @@ export async function POST(req: Request) {
   const model = getLanguageModel();
   // Use fewer steps for mock provider to prevent repetition
   const isMockProvider = !process.env.ANTHROPIC_API_KEY;
-  const result = streamText({
-    model,
+
+  const result = await streamText({
+    model: model as any,
     messages,
     maxTokens: 10_000,
     maxSteps: isMockProvider ? 4 : 40,
-    onError: (err: any) => {
-      console.error(err);
-    },
     tools: {
       str_replace_editor: buildStrReplaceTool(fileSystem),
       file_manager: buildFileManagerTool(fileSystem),
@@ -56,11 +54,11 @@ export async function POST(req: Request) {
 
           // Get the messages from the response
           const responseMessages = response.messages || [];
-          // Combine original messages with response messages
-          const allMessages = appendResponseMessages({
-            messages: [...messages.filter((m) => m.role !== "system")],
-            responseMessages,
-          });
+          // Combine original messages with response messages, excluding system message
+          const allMessages = [
+            ...messages.filter((m) => m.role !== "system"),
+            ...responseMessages,
+          ];
 
           await prisma.project.update({
             where: {
